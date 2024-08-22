@@ -1,8 +1,10 @@
 ## Custom gitignore
 data/
+data-spatial/
 data-source/
 docs/
 report/
+results/
 
 *DS_Store
 

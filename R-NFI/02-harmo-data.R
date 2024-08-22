@@ -37,7 +37,25 @@ tree <- tmp_tree |>
     plot_row = row, plot_no = plot_numbe, tree_no = tree_numbe, tree_distance = distance, 
     tree_azimuth = bearing, tree_species_code = Species_Co, tree_species_scientific_name = Species_na,
     tree_dbh = DBH, tree_quality = quality_cl, tree_crown_class = crown_clas, tree_sample_code = sample_tre, 
-    tree_total_height = height, tree_bole_height = Ht_base, tree_crown_height = height_cro
+    tree_total_height = height, tree_base_distance = Ht_base, tree_bole_height = height_cro
+  ) |>
+  mutate(
+    ## Plot radius
+    plot_radius = case_when(
+      tree_dbh < 10 ~ 4,
+      tree_dbh < 20 ~ 8,
+      tree_dbh < 30 ~ 15,
+      tree_dbh >= 30 ~ 20,
+      TRUE ~ NA_integer_
+    ),
+    ## DBH class according to plot radius
+    tree_dbh_class1 = case_when(
+      tree_dbh < 10 ~ "05-09",
+      tree_dbh < 20 ~ "10-19",
+      tree_dbh < 30 ~ "20-29",
+      tree_dbh >= 30 ~ "30+",
+      TRUE ~ NA_character_
+    )
   )
 
 ##
@@ -155,12 +173,30 @@ cluster <- tmp_cluster1 |>
   left_join(tmp_cluster3, by = "cluster_id_new")
 
 
-## Save tables
+##
+## CEO NFI ######
+##
+
+## Plot ID should be 3numbers - 2 numbers - 1 number
+## If plot_col < 100, need to add an extra 0 for sorting purpose
+
+ceonfi <- ceonfi_init |>
+  mutate(
+    plot_col = as.numeric(str_extract(Plot_id, "[^-]+")),
+    plot_id_new = if_else(
+      plot_col < 100, paste0("0", Plot_id), Plot_id
+    )
+  ) |>
+  select(plot_id_new, everything())
+
+
+## Save tables ######
 write_csv(tree, "data/tree.csv")
 write_csv(plot, "data/plot.csv")
 write_csv(cluster, "data/cluster.csv")
+write_csv(ceonfi, "data/ceonfi.csv")
 
 
-## Clean R environment
+## Clean R environment ######
 #rm(tmp_tree)
 rm(list = str_subset(ls(), "tmp"))
