@@ -1,9 +1,13 @@
 
-## EQUATIONS
+## EQUATIONS 
+## Naming convention:
+## + column_name OR ColumnName
+## + start column name with attribute level
 eq <- eq_init |>
   rename(tree_species_name = Species_Name, tree_species_code = species_code, species_name_combi = Species_name) |>
   rename_with(str_to_lower)
-  
+
+
 
 ##
 ## TREE - Preparation #######
@@ -79,12 +83,16 @@ plot <- tmp_tree |>
     plot_crown_cover = crown_cove, plot_developement = developmen, 
     plot_selected = selected_f, plot_physio = Physiograh, 
     admin_province = Province, admin_district = DISTRICT, 
-    admin_park_name = GaPa_NaPa, plot_ward_no = WARD_No    
+    admin_municipality_new = GaPa_NaPa, plot_ward_no = WARD_No    
   ) |>
   distinct()
 
+
+
 ## Check 
-length(unique(tmp_tree$plot_id_new)) == nrow(plot)
+check <- length(unique(tmp_tree$plot_id_new)) == nrow(plot)
+check
+message("plot table has correct number of plots: ", check)
 
 ## Find duplicate
 vec_plot_id <- plot |>
@@ -136,7 +144,7 @@ tmp_cluster2 <- tmp_plot |>
   mutate(
     cluster_gps_xx = case_when(
       plot_no %in% 1:3 ~ plot_gps_x_behrmann + 150,
-      plot_no %in% 4:6 ~ plot_gps_x_behrmann + 150,
+      plot_no %in% 4:6 ~ plot_gps_x_behrmann - 150,
       TRUE ~ NA_integer_
     ),
     cluster_gps_yy = case_when(
@@ -198,5 +206,6 @@ write_csv(ceonfi, "data/ceonfi.csv")
 
 
 ## Clean R environment ######
-#rm(tmp_tree)
 rm(list = str_subset(ls(), "tmp"))
+
+

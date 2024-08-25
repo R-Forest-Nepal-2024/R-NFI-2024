@@ -15,8 +15,8 @@ tm_basemap(c("Esri.WorldGrayCanvas", "Esri.WorldTopoMap", "Esri.WorldImagery", "
   tm_shape(sf_nepal) +
   tm_borders(col = "red") +
   tm_shape(sf_plot) +
-  tm_symbols(fill = "plot_physio") +
-  tm_scalebar()
+  tm_symbols(col = "plot_physio") +
+  tm_scale_bar()
 
 ## CLUSTER LEVEL ######
 gg <- ggplot() +

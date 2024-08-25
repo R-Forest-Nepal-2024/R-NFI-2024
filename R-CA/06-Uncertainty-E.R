@@ -67,15 +67,66 @@ U_all <- map(1:n_trans, function(x){
 
 U_redd <- U_all |>
   group_by(redd_activity, sim_no) |>
-  summarise(E_redd = sum(E), .groups = "drop")
+  summarise(E_redd = sum(E), .groups = "drop") |>
+  mutate(E_redd_mean = E_redd / RP)
   
-U_DF <- U_redd |> filter(redd_activity == "forest degradation")
+## Isolate Emissions from deforestation ####
+U_DF <- U_redd |> filter(redd_activity == "deforestation")
 
-hist(U_DF$E_redd)
-E_median <- median(U_DF$E_redd)
-E_ci_lower <- median(U_DF$E_redd) - quantile(U_DF$E_redd, 0.1)
-E_ci_upper <- quantile(U_DF$E_redd, 0.9) - median(U_DF$E_redd)
+hist(U_DF$E_redd_mean)
+E_median <- median(U_DF$E_redd_mean)
+E_ci_lower <- median(U_DF$E_redd_mean) - quantile(U_DF$E_redd_mean, 0.05)
+E_ci_upper <- quantile(U_DF$E_redd_mean, 0.95) - median(U_DF$E_redd_mean)
 E_ci <- (E_ci_upper + E_ci_lower) / 2
 E_ciperc <- round(E_ci / E_median * 100, 0)
 paste0(round(E_median, 0), " +/- ", E_ciperc, "%")
+
+## Isolate emissions from degradation
+U_DG <- U_redd |> filter(redd_activity == "forest degradation")
+
+hist(U_DG$E_redd_mean)
+E_median <- median(U_DG$E_redd_mean)
+E_ci_lower <- median(U_DG$E_redd_mean) - quantile(U_DG$E_redd_mean, 0.05)
+E_ci_upper <- quantile(U_DG$E_redd_mean, 0.95) - median(U_DG$E_redd_mean)
+E_ci <- (E_ci_upper + E_ci_lower) / 2
+E_ciperc <- round(E_ci / E_median * 100, 0)
+paste0(round(E_median, 0), " +/- ", E_ciperc, "%")
+
+
+## FREL with Uncertainty ####
+
+U_FREL <- U_redd |>
+  group_by(sim_no) |>
+  summarise(E_FREL = sum(E_redd_mean))
+
+hist(U_FREL$E_FREL)
+E_median <- median(U_FREL$E_FREL)
+E_ci_lower <- median(U_FREL$E_FREL) - quantile(U_FREL$E_FREL, 0.05)
+E_ci_upper <- quantile(U_FREL$E_FREL, 0.95) - median(U_FREL$E_FREL)
+E_ci <- (E_ci_upper + E_ci_lower) / 2
+E_ciperc <- round(E_ci / E_median * 100, 0)
+paste0(round(E_median, 0), " +/- ", E_ciperc, "%")
+
+ggplot(U_FREL) +
+  geom_histogram(
+    aes(x = E_FREL), 
+    fill = "lightpink", color = "forestgreen"
+    ) +
+  geom_vline(xintercept = E_median, color = "red", linewidth = 0.6) +
+  geom_vline(
+    xintercept = E_median - E_ci_lower, 
+    color = "lightblue", linewidth = 0.6
+    ) +
+  geom_vline(
+    xintercept = E_median + E_ci_upper, 
+    color = "lightblue", linewidth = 0.6
+    ) +
+  labs(
+    x = "FREL simulation value",
+    y = "simulation count",
+    caption = "median in red \n5% and 95% quantiles in light blue"
+  )
+
+
+
 
